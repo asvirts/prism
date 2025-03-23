@@ -28,6 +28,7 @@ interface ChartConfig {
   groupBy?: string
   title?: string
   colorScheme?: string[]
+  margin?: { top: number; right: number; left: number; bottom: number }
 }
 
 interface ChartComponentProps {
@@ -108,13 +109,42 @@ export default function ChartComponent({
     if (!data.length) return
 
     // Process and transform data based on chart configuration
-    let transformed = [...data]
+    let transformed = [...data].map((item) => {
+      // Create a new object with the same properties
+      const newItem = { ...item }
+
+      // Convert numeric strings to actual numbers for the yAxis
+      if (config.yAxis) {
+        if (Array.isArray(config.yAxis)) {
+          config.yAxis.forEach((axis) => {
+            if (typeof newItem[axis] === "string") {
+              newItem[axis] = parseFloat(newItem[axis]) || 0
+            }
+          })
+        } else if (typeof newItem[config.yAxis] === "string") {
+          newItem[config.yAxis] = parseFloat(newItem[config.yAxis]) || 0
+        }
+      }
+
+      // Also ensure xAxis is numeric if it should be
+      if (
+        config.type === "scatter" &&
+        config.xAxis &&
+        typeof newItem[config.xAxis] === "string"
+      ) {
+        if (newItem[config.xAxis].match(/^\d+(\.\d+)?$/)) {
+          newItem[config.xAxis] = parseFloat(newItem[config.xAxis]) || 0
+        }
+      }
+
+      return newItem
+    })
 
     // If we have a groupBy field, we need to aggregate the data
     if (config.groupBy && config.xAxis && (config.yAxis as string)) {
       const groupedData = new Map()
 
-      data.forEach((item) => {
+      transformed.forEach((item) => {
         const groupKey = item[config.groupBy as string]
         const xValue = item[config.xAxis as string]
 
@@ -123,12 +153,77 @@ export default function ChartComponent({
         }
 
         const entry = groupedData.get(xValue)
-        entry[groupKey] = item[config.yAxis as string]
+        // Ensure this is a number, not a string
+        entry[groupKey] =
+          typeof item[config.yAxis as string] === "string"
+            ? parseFloat(item[config.yAxis as string] || "0")
+            : item[config.yAxis as string] || 0
         entry[config.xAxis as string] = xValue
         groupedData.set(xValue, entry)
       })
 
       transformed = Array.from(groupedData.values())
+    }
+
+    // For bar and line charts with many unique x-axis values, aggregate the data
+    if (
+      (config.type === "bar" ||
+        config.type === "line" ||
+        config.type === "area") &&
+      config.xAxis &&
+      (config.yAxis as string) &&
+      !config.groupBy
+    ) {
+      // Count unique x-axis values
+      const uniqueXValues = new Set(
+        transformed.map((item) => item[config.xAxis as string])
+      )
+
+      // If there are too many unique values and they seem to be ID-like (e.g., C1001, C1002)
+      if (uniqueXValues.size > 10) {
+        const firstValue = transformed[0]?.[config.xAxis as string]
+        const idPattern =
+          typeof firstValue === "string" && /^[A-Z][0-9]+$/i.test(firstValue)
+
+        // If they look like IDs, we should group/aggregate them
+        if (idPattern) {
+          // For customer-like IDs, let's group by first digit of ID to create buckets
+          const aggregatedData: Record<string, any>[] = []
+          const buckets = new Map<string, number[]>()
+
+          transformed.forEach((item) => {
+            const id = item[config.xAxis as string] as string
+            // Extract numeric part and take first digit
+            const match = id.match(/[0-9]+/)
+            if (match) {
+              const bucket = match[0].charAt(0)
+              const value =
+                typeof item[config.yAxis as string] === "string"
+                  ? parseFloat(item[config.yAxis as string])
+                  : item[config.yAxis as string] || 0
+
+              if (!buckets.has(bucket)) {
+                buckets.set(bucket, [])
+              }
+              buckets.get(bucket)?.push(value)
+            }
+          })
+
+          // Calculate average for each bucket
+          buckets.forEach((values, bucket) => {
+            const sum = values.reduce((a, b) => a + b, 0)
+            const avg = values.length > 0 ? sum / values.length : 0
+            aggregatedData.push({
+              [config.xAxis as string]: `Group ${bucket}`,
+              [config.yAxis as string]: avg
+            })
+          })
+
+          if (aggregatedData.length > 0) {
+            transformed = aggregatedData
+          }
+        }
+      }
     }
 
     // Apply color scheme
@@ -153,10 +248,35 @@ export default function ChartComponent({
   }
 
   const renderChart = () => {
+    const margin = config.margin || { top: 20, right: 30, left: 20, bottom: 20 }
+
+    // Find min/max values for better axis scaling
+    let minValue = 0
+    let maxValue = 0
+
+    if (config.yAxis) {
+      const yAxis = config.yAxis as string
+      processedData.forEach((item) => {
+        const value = Number(item[yAxis])
+        if (!isNaN(value)) {
+          if (value < minValue) minValue = value
+          if (value > maxValue) maxValue = value
+        }
+      })
+    }
+
+    // If all values are zero or close to zero, create a small default range
+    if (Math.abs(maxValue - minValue) < 0.001) {
+      maxValue = 10
+    }
+
+    // Add 10% padding to the top of the domain
+    maxValue = maxValue * 1.1
+
     switch (config.type) {
       case "line":
         return (
-          <LineChart data={processedData}>
+          <LineChart data={processedData} margin={margin}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey={config.xAxis}
@@ -175,7 +295,7 @@ export default function ChartComponent({
                   : value
               }}
             />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} domain={[minValue, maxValue]} />
             <Tooltip />
             <Legend />
             {config.yAxis && Array.isArray(config.yAxis) ? (
@@ -185,6 +305,7 @@ export default function ChartComponent({
                   type="monotone"
                   dataKey={axis}
                   stroke={colorScheme[index % colorScheme.length]}
+                  strokeWidth={2}
                   activeDot={{ r: 8 }}
                 />
               ))
@@ -198,6 +319,7 @@ export default function ChartComponent({
                   type="monotone"
                   dataKey={String(group)}
                   stroke={colorScheme[index % colorScheme.length]}
+                  strokeWidth={2}
                   name={String(group)}
                   activeDot={{ r: 8 }}
                 />
@@ -207,6 +329,7 @@ export default function ChartComponent({
                 type="monotone"
                 dataKey={config.yAxis as string}
                 stroke={colorScheme[0]}
+                strokeWidth={2}
                 activeDot={{ r: 8 }}
               />
             )}
@@ -215,7 +338,7 @@ export default function ChartComponent({
 
       case "bar":
         return (
-          <BarChart data={processedData}>
+          <BarChart data={processedData} margin={margin}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey={config.xAxis}
@@ -233,7 +356,7 @@ export default function ChartComponent({
                   : value
               }}
             />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} domain={[minValue, maxValue]} />
             <Tooltip />
             <Legend />
             {config.yAxis && Array.isArray(config.yAxis) ? (
@@ -242,6 +365,7 @@ export default function ChartComponent({
                   key={axis}
                   dataKey={axis}
                   fill={colorScheme[index % colorScheme.length]}
+                  barSize={30}
                 />
               ))
             ) : config.groupBy ? (
@@ -253,17 +377,22 @@ export default function ChartComponent({
                   dataKey={String(group)}
                   fill={colorScheme[index % colorScheme.length]}
                   name={String(group)}
+                  barSize={30}
                 />
               ))
             ) : (
-              <Bar dataKey={config.yAxis as string} fill={colorScheme[0]} />
+              <Bar
+                dataKey={config.yAxis as string}
+                fill={colorScheme[0]}
+                barSize={30}
+              />
             )}
           </BarChart>
         )
 
       case "area":
         return (
-          <AreaChart data={processedData}>
+          <AreaChart data={processedData} margin={margin}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey={config.xAxis}
@@ -281,7 +410,7 @@ export default function ChartComponent({
                   : value
               }}
             />
-            <YAxis tick={{ fontSize: 12 }} />
+            <YAxis tick={{ fontSize: 12 }} domain={[minValue, maxValue]} />
             <Tooltip />
             <Legend />
             {config.yAxis && Array.isArray(config.yAxis) ? (
@@ -292,7 +421,8 @@ export default function ChartComponent({
                   dataKey={axis}
                   fill={colorScheme[index % colorScheme.length]}
                   stroke={colorScheme[index % colorScheme.length]}
-                  fillOpacity={0.3}
+                  strokeWidth={2}
+                  fillOpacity={0.6}
                 />
               ))
             ) : config.groupBy ? (
@@ -305,8 +435,9 @@ export default function ChartComponent({
                   dataKey={String(group)}
                   fill={colorScheme[index % colorScheme.length]}
                   stroke={colorScheme[index % colorScheme.length]}
+                  strokeWidth={2}
                   name={String(group)}
-                  fillOpacity={0.3}
+                  fillOpacity={0.6}
                 />
               ))
             ) : (
@@ -315,7 +446,8 @@ export default function ChartComponent({
                 dataKey={config.yAxis as string}
                 fill={colorScheme[0]}
                 stroke={colorScheme[0]}
-                fillOpacity={0.3}
+                strokeWidth={2}
+                fillOpacity={0.6}
               />
             )}
           </AreaChart>
@@ -323,40 +455,107 @@ export default function ChartComponent({
 
       case "pie":
         // For pie charts, we need to transform the data
-        const pieData = config.groupBy
-          ? [
-              ...new Set(data.map((item) => item[config.groupBy as string]))
-            ].map((group) => {
-              const total = data
-                .filter((item) => item[config.groupBy as string] === group)
-                .reduce(
-                  (sum, item) =>
-                    sum + parseFloat(item[config.yAxis as string] || 0),
-                  0
-                )
+        const isIdPattern = (value: any) =>
+          typeof value === "string" && /^[A-Z][0-9]+$/i.test(value)
 
-              return {
-                name: group,
-                value: total
-              }
-            })
-          : data.map((item) => ({
+        // Check if we need to group data (if x-axis looks like IDs)
+        const needsGrouping =
+          config.xAxis &&
+          data.length > 0 &&
+          isIdPattern(data[0][config.xAxis as string])
+
+        // Process the data differently if it has ID-like values
+        let pieData = []
+
+        if (needsGrouping && config.xAxis) {
+          // Group by the first digit of the ID
+          const buckets = new Map<string, number>()
+
+          data.forEach((item) => {
+            const id = item[config.xAxis as string] as string
+            const match = id.match(/[0-9]+/)
+            if (match) {
+              const bucket = `Group ${match[0].charAt(0)}`
+              const value =
+                typeof item[config.yAxis as string] === "string"
+                  ? parseFloat(item[config.yAxis as string] || "0")
+                  : item[config.yAxis as string] || 0
+
+              buckets.set(bucket, (buckets.get(bucket) || 0) + value)
+            }
+          })
+
+          pieData = Array.from(buckets).map(([name, value]) => ({
+            name,
+            value
+          }))
+        } else if (config.groupBy) {
+          // Regular grouped data processing
+          pieData = [
+            ...new Set(data.map((item) => item[config.groupBy as string]))
+          ].map((group) => {
+            const total = data
+              .filter((item) => item[config.groupBy as string] === group)
+              .reduce((sum, item) => {
+                const val =
+                  typeof item[config.yAxis as string] === "string"
+                    ? parseFloat(item[config.yAxis as string] || "0")
+                    : item[config.yAxis as string] || 0
+                return sum + val
+              }, 0)
+
+            return {
+              name: group,
+              value: total
+            }
+          })
+        } else {
+          // Individual data points
+          pieData = data.map((item) => {
+            const value =
+              typeof item[config.yAxis as string] === "string"
+                ? parseFloat(item[config.yAxis as string] || "0")
+                : item[config.yAxis as string] || 0
+
+            return {
               name: item[config.xAxis as string],
-              value: parseFloat(item[config.yAxis as string] || 0)
-            }))
+              value: value
+            }
+          })
+        }
+
+        // Limit the number of pie slices for better visualization (max 8 slices)
+        if (pieData.length > 8) {
+          // Sort by value (descending)
+          pieData.sort((a, b) => b.value - a.value)
+
+          // Take top 7 slices and aggregate the rest into "Other"
+          const topSlices = pieData.slice(0, 7)
+          const otherSlices = pieData.slice(7)
+
+          const otherValue = otherSlices.reduce(
+            (sum, item) => sum + item.value,
+            0
+          )
+
+          pieData = [...topSlices, { name: "Other", value: otherValue }]
+        }
 
         return (
-          <PieChart>
+          <PieChart margin={margin}>
             <Pie
               data={pieData}
               cx="50%"
               cy="50%"
-              labelLine={false}
+              labelLine={true}
               label={({ name, percent }) =>
                 `${name}: ${(percent * 100).toFixed(0)}%`
               }
-              outerRadius={120}
+              innerRadius={30}
+              outerRadius={110}
               fill="#8884d8"
+              stroke="#fff"
+              strokeWidth={2}
               dataKey="value"
             >
               {pieData.map((entry, index) => (
@@ -366,14 +565,14 @@ export default function ChartComponent({
                 />
               ))}
             </Pie>
-            <Tooltip />
-            <Legend />
+            <Tooltip formatter={(value) => Number(value).toLocaleString()} />
+            <Legend layout="vertical" verticalAlign="middle" align="right" />
           </PieChart>
         )
 
       case "scatter":
         return (
-          <ScatterChart>
+          <ScatterChart margin={margin}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey={config.xAxis}
@@ -424,8 +623,20 @@ export default function ChartComponent({
           {config.title}
         </h3>
       )}
-      <div style={{ width: "100%", height: `${height}px` }}>
-        <ResponsiveContainer width="100%" height="100%">
+      <div
+        style={{
+          width: "100%",
+          height: `${height}px`,
+          position: "relative",
+          minHeight: "300px"
+        }}
+      >
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minHeight={300}
+          aspect={undefined}
+        >
           {renderChart()}
         </ResponsiveContainer>
       </div>

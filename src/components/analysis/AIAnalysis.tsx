@@ -1,5 +1,10 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { AnalysisResult } from "../../lib/ai/data-analyzer"
+import {
+  analyzeDataset,
+  VisualizationSuggestion
+} from "@/lib/services/data-analysis"
+import VisualizationSuggestions from "@/components/analysis/VisualizationSuggestions"
 
 interface AIAnalysisProps {
   data: Record<string, any>[]
@@ -18,7 +23,7 @@ export default function AIAnalysis({
   const [isLoading, setIsLoading] = useState(false)
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
   const [activeTab, setActiveTab] = useState<
-    "trends" | "anomalies" | "correlations" | "insights"
+    "trends" | "anomalies" | "correlations" | "insights" | "visualizations"
   >("insights")
   const [analysisOptions, setAnalysisOptions] = useState({
     focusOn: "all" as
@@ -31,6 +36,10 @@ export default function AIAnalysis({
     valueFields: [] as string[],
     categoryFields: [] as string[]
   })
+  const [visualizationSuggestions, setVisualizationSuggestions] = useState<
+    VisualizationSuggestion[]
+  >([])
+  const [isLoadingVisualizations, setIsLoadingVisualizations] = useState(false)
 
   const getFieldType = (fieldName: string): "numeric" | "date" | "category" => {
     if (!data.length) return "category"
@@ -77,6 +86,20 @@ export default function AIAnalysis({
     }
   }
 
+  // Function to get AI-powered visualization suggestions
+  const getVisualizationSuggestions = async () => {
+    setIsLoadingVisualizations(true)
+    try {
+      const suggestions = await analyzeDataset(headers, data)
+      setVisualizationSuggestions(suggestions)
+      setActiveTab("visualizations")
+    } catch (error) {
+      console.error("Error getting visualization suggestions:", error)
+    } finally {
+      setIsLoadingVisualizations(false)
+    }
+  }
+
   const handleFieldSelectionChange = (
     field: string,
     type: "time" | "value" | "category"
@@ -113,6 +136,16 @@ export default function AIAnalysis({
         }
       }
     })
+  }
+
+  // Function to apply a visualization suggestion
+  const handleApplySuggestion = (suggestion: VisualizationSuggestion) => {
+    if (onVisualizationRequest) {
+      onVisualizationRequest({
+        chartType: suggestion.chartType,
+        config: suggestion.config
+      })
+    }
   }
 
   // Function to request visualizations from the API
@@ -178,7 +211,85 @@ export default function AIAnalysis({
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <h3 className="text-lg font-medium mb-4">AI-Powered Analysis</h3>
 
-      {!analysis ? (
+      <div className="border-b border-gray-200 mb-4">
+        <nav className="-mb-px flex space-x-6" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab("insights")}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "insights"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Insights
+          </button>
+          <button
+            onClick={() => setActiveTab("visualizations")}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "visualizations"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            AI Visualization Suggestions
+          </button>
+          <button
+            onClick={() => setActiveTab("trends")}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "trends"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Trends
+          </button>
+          <button
+            onClick={() => setActiveTab("anomalies")}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "anomalies"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Anomalies
+          </button>
+          <button
+            onClick={() => setActiveTab("correlations")}
+            className={`pb-3 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "correlations"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            Correlations
+          </button>
+        </nav>
+      </div>
+
+      {activeTab === "visualizations" ? (
+        <div className="space-y-4">
+          {visualizationSuggestions.length === 0 && !isLoadingVisualizations ? (
+            <div className="bg-gray-50 rounded-lg p-6 text-center">
+              <p className="text-gray-600 mb-4">
+                Get AI-powered visualization suggestions based on your data
+                characteristics.
+              </p>
+              <button
+                onClick={getVisualizationSuggestions}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Generate Visualization Suggestions
+              </button>
+            </div>
+          ) : (
+            <VisualizationSuggestions
+              suggestions={visualizationSuggestions}
+              isLoading={isLoadingVisualizations}
+              onApplySuggestion={handleApplySuggestion}
+            />
+          )}
+        </div>
+      ) : !analysis ? (
         <div className="space-y-4">
           <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
             <h4 className="text-md font-medium mb-3">Analysis Options</h4>
@@ -260,28 +371,29 @@ export default function AIAnalysis({
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  Select how each field should be treated in the analysis
-                </p>
               </div>
             </div>
           </div>
 
-          <button
-            type="button"
-            disabled={isLoading}
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            onClick={handleRunAnalysis}
-          >
-            {isLoading ? (
-              <span className="flex items-center">
-                <span className="w-4 h-4 mr-2 border-2 border-t-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                Analyzing...
-              </span>
-            ) : (
-              "Run AI Analysis"
+          <div className="flex space-x-4">
+            <button
+              type="button"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={handleRunAnalysis}
+              disabled={isLoading}
+            >
+              {isLoading ? "Analyzing..." : "Analyze Data"}
+            </button>
+            {onVisualizationRequest && (
+              <button
+                type="button"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                onClick={requestVisualization}
+              >
+                Create Visualization
+              </button>
             )}
-          </button>
+          </div>
         </div>
       ) : (
         <div className="space-y-4">

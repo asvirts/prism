@@ -1,0 +1,59 @@
+date,campaign_name,channel,spend,impressions,clicks,conversions,revenue,roas,ctr,conversion_rate,cost_per_conversion,target_audience
+2023-01-05,Winter Sale,Facebook,5000,450000,15750,315,22050,4.41,3.50,2.00,15.87,General
+2023-01-12,Winter Sale,Google Search,4500,195000,9750,390,27300,6.07,5.00,4.00,11.54,General
+2023-01-19,Winter Sale,Instagram,3500,320000,9600,192,13440,3.84,3.00,2.00,18.23,Young Adults
+2023-01-26,Winter Sale,Email,1200,85000,6800,340,23800,19.83,8.00,5.00,3.53,Existing Customers
+2023-02-02,Product Launch,Facebook,6000,520000,18200,364,25480,4.25,3.50,2.00,16.48,General
+2023-02-09,Product Launch,Google Search,5500,240000,12000,480,33600,6.11,5.00,4.00,11.46,General
+2023-02-16,Product Launch,Instagram,4000,380000,11400,228,15960,3.99,3.00,2.00,17.54,Young Adults
+2023-02-23,Product Launch,TikTok,3000,450000,13500,270,18900,6.30,3.00,2.00,11.11,Young Adults
+2023-03-02,Spring Collection,Facebook,5500,500000,17500,350,24500,4.45,3.50,2.00,15.71,General
+2023-03-09,Spring Collection,Google Search,5000,215000,10750,430,30100,6.02,5.00,4.00,11.63,General
+2023-03-16,Spring Collection,Instagram,3800,350000,10500,210,14700,3.87,3.00,2.00,18.10,Young Adults
+2023-03-23,Spring Collection,YouTube,4500,380000,11400,228,15960,3.55,3.00,2.00,19.74,General
+2023-03-30,Spring Collection,Email,1500,95000,7600,380,26600,17.73,8.00,5.00,3.95,Existing Customers
+2023-04-06,Flash Sale,Facebook,4000,380000,13300,266,18620,4.66,3.50,2.00,15.04,General
+2023-04-13,Flash Sale,Google Search,3500,150000,7500,300,21000,6.00,5.00,4.00,11.67,General
+2023-04-20,Flash Sale,Instagram,2800,260000,7800,156,10920,3.90,3.00,2.00,17.95,Young Adults
+2023-04-27,Flash Sale,Email,1000,70000,5600,280,19600,19.60,8.00,5.00,3.57,Existing Customers
+2023-05-04,Summer Essentials,Facebook,7000,650000,22750,455,31850,4.55,3.50,2.00,15.38,General
+2023-05-11,Summer Essentials,Google Search,6500,270000,13500,540,37800,5.82,5.00,4.00,12.04,General
+2023-05-18,Summer Essentials,Instagram,5000,450000,13500,270,18900,3.78,3.00,2.00,18.52,Young Adults
+2023-05-25,Summer Essentials,TikTok,4000,600000,18000,360,25200,6.30,3.00,2.00,11.11,Young Adults
+2023-06-01,Summer Essentials,YouTube,5500,480000,14400,288,20160,3.67,3.00,2.00,19.10,General
+2023-06-08,Summer Essentials,Email,2000,120000,9600,480,33600,16.80,8.00,5.00,4.17,Existing Customers
+2023-06-15,Clearance,Facebook,3500,320000,11200,224,15680,4.48,3.50,2.00,15.63,General
+2023-06-22,Clearance,Google Search,3000,130000,6500,260,18200,6.07,5.00,4.00,11.54,General
+2023-06-29,Clearance,Instagram,2500,230000,6900,138,9660,3.86,3.00,2.00,18.12,Young Adults
+2023-07-06,Back to School,Facebook,8000,750000,26250,525,36750,4.59,3.50,2.00,15.24,Families
+2023-07-13,Back to School,Google Search,7500,320000,16000,640,44800,5.97,5.00,4.00,11.72,Families
+2023-07-20,Back to School,Instagram,6000,540000,16200,324,22680,3.78,3.00,2.00,18.52,Young Adults
+2023-07-27,Back to School,TikTok,5000,750000,22500,450,31500,6.30,3.00,2.00,11.11,Young Adults
+2023-08-03,Back to School,YouTube,6500,580000,17400,348,24360,3.75,3.00,2.00,18.68,Families
+2023-08-10,Back to School,Email,3000,150000,12000,600,42000,14.00,8.00,5.00,5.00,Existing Customers
+2023-08-17,Fall Preview,Facebook,6500,600000,21000,420,29400,4.52,3.50,2.00,15.48,General
+2023-08-24,Fall Preview,Google Search,6000,260000,13000,520,36400,6.07,5.00,4.00,11.54,General
+2023-08-31,Fall Preview,Instagram,4500,410000,12300,246,17220,3.83,3.00,2.00,18.29,Young Adults
+2023-09-07,Fall Preview,YouTube,5000,420000,12600,252,17640,3.53,3.00,2.00,19.84,General
+2023-09-14,Fall Preview,Email,1800,110000,8800,440,30800,17.11,8.00,5.00,4.09,Existing Customers
+2023-09-21,Anniversary Sale,Facebook,9000,850000,29750,595,41650,4.63,3.50,2.00,15.13,General
+2023-09-28,Anniversary Sale,Google Search,8500,360000,18000,720,50400,5.93,5.00,4.00,11.81,General
+2023-10-05,Anniversary Sale,Instagram,6500,580000,17400,348,24360,3.75,3.00,2.00,18.68,Young Adults
+2023-10-12,Anniversary Sale,TikTok,5500,830000,24900,498,34860,6.34,3.00,2.00,11.04,Young Adults
+2023-10-19,Anniversary Sale,YouTube,7000,600000,18000,360,25200,3.60,3.00,2.00,19.44,General
+2023-10-26,Anniversary Sale,Email,3500,170000,13600,680,47600,13.60,8.00,5.00,5.15,Existing Customers
+2023-11-02,Black Friday Preview,Facebook,10000,950000,33250,665,46550,4.66,3.50,2.00,15.04,General
+2023-11-09,Black Friday Preview,Google Search,9000,400000,20000,800,56000,6.22,5.00,4.00,11.25,General
+2023-11-16,Black Friday Preview,Instagram,7000,650000,19500,390,27300,3.90,3.00,2.00,17.95,Young Adults
+2023-11-23,Black Friday,Facebook,15000,1400000,49000,980,68600,4.57,3.50,2.00,15.31,General
+2023-11-24,Black Friday,Google Search,12000,550000,27500,1100,77000,6.42,5.00,4.00,10.91,General
+2023-11-25,Black Friday,Instagram,9000,850000,25500,510,35700,3.97,3.00,2.00,17.65,Young Adults
+2023-11-26,Black Friday,TikTok,8000,1200000,36000,720,50400,6.30,3.00,2.00,11.11,Young Adults
+2023-11-27,Cyber Monday,Facebook,14000,1350000,47250,945,66150,4.73,3.50,2.00,14.81,General
+2023-11-28,Cyber Monday,Google Search,11000,500000,25000,1000,70000,6.36,5.00,4.00,11.00,General
+2023-11-29,Cyber Monday,Instagram,8000,780000,23400,468,32760,4.10,3.00,2.00,17.09,Young Adults
+2023-12-06,Holiday Gift Guide,Facebook,8000,750000,26250,525,36750,4.59,3.50,2.00,15.24,General
+2023-12-13,Holiday Gift Guide,Google Search,7000,300000,15000,600,42000,6.00,5.00,4.00,11.67,General
+2023-12-20,Last Minute Gifts,Facebook,6000,550000,19250,385,26950,4.49,3.50,2.00,15.58,General
+2023-12-27,End of Year Sale,Facebook,5000,450000,15750,315,22050,4.41,3.50,2.00,15.87,General
+2023-12-31,End of Year Sale,Google Search,4500,195000,9750,390,27300,6.07,5.00,4.00,11.54,General 

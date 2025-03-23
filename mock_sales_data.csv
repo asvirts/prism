@@ -1,0 +1,61 @@
+date,region,product_category,product_name,units_sold,unit_price,total_revenue,customer_segment,marketing_channel
+2023-01-05,North America,Electronics,Smartphone X1,145,699.99,101498.55,Consumer,Social Media
+2023-01-12,Europe,Electronics,Laptop Pro,89,1299.99,115699.11,Business,Direct Sales
+2023-01-18,Asia,Home Goods,Smart Speaker,210,89.99,18897.90,Consumer,Email
+2023-01-22,North America,Electronics,Tablet Mini,167,349.99,58448.33,Education,Online Ads
+2023-01-31,South America,Clothing,Winter Jacket,98,129.99,12739.02,Consumer,Affiliate
+2023-02-03,Europe,Electronics,Wireless Earbuds,312,89.99,28076.88,Consumer,Social Media
+2023-02-09,North America,Home Goods,Coffee Maker,78,159.99,12479.22,Business,Direct Sales
+2023-02-15,Asia,Electronics,Gaming Console,56,499.99,27999.44,Consumer,Online Ads
+2023-02-22,Europe,Clothing,Athletic Shoes,203,79.99,16237.97,Consumer,Email
+2023-02-28,North America,Electronics,Smartphone X2,189,799.99,151198.11,Consumer,Social Media
+2023-03-04,South America,Home Goods,Blender Pro,67,129.99,8709.33,Business,Affiliate
+2023-03-11,Asia,Electronics,Smart Watch,245,249.99,61247.55,Consumer,Email
+2023-03-17,North America,Clothing,Designer Jeans,112,89.99,10078.88,Consumer,Online Ads
+2023-03-24,Europe,Electronics,Laptop Ultra,78,1499.99,116999.22,Business,Direct Sales
+2023-03-30,North America,Home Goods,Robot Vacuum,56,399.99,22399.44,Consumer,Social Media
+2023-04-05,Asia,Electronics,Smartphone X1,178,699.99,124598.22,Consumer,Email
+2023-04-12,Europe,Clothing,Summer Dress,234,59.99,14037.66,Consumer,Social Media
+2023-04-18,North America,Electronics,Wireless Earbuds,423,89.99,38065.77,Consumer,Online Ads
+2023-04-25,South America,Home Goods,Air Purifier,67,299.99,20099.33,Business,Direct Sales
+2023-04-30,Asia,Electronics,Tablet Mini,145,349.99,50748.55,Education,Affiliate
+2023-05-03,North America,Clothing,Casual Shirt,198,39.99,7918.02,Consumer,Email
+2023-05-09,Europe,Electronics,Gaming Console,45,499.99,22499.55,Consumer,Social Media
+2023-05-15,Asia,Home Goods,Smart Speaker,167,89.99,15028.33,Consumer,Direct Sales
+2023-05-22,North America,Electronics,Laptop Pro,94,1299.99,122199.06,Business,Online Ads
+2023-05-31,South America,Clothing,Athletic Shoes,145,79.99,11598.55,Consumer,Email
+2023-06-05,Europe,Electronics,Smartphone X2,167,799.99,133598.33,Consumer,Social Media
+2023-06-12,North America,Home Goods,Coffee Maker,89,159.99,14239.11,Business,Direct Sales
+2023-06-18,Asia,Electronics,Smart Watch,234,249.99,58497.66,Consumer,Online Ads
+2023-06-25,Europe,Clothing,Winter Jacket,56,129.99,7279.44,Consumer,Affiliate
+2023-06-30,North America,Electronics,Wireless Earbuds,312,89.99,28076.88,Consumer,Email
+2023-07-05,South America,Home Goods,Blender Pro,78,129.99,10139.22,Business,Social Media
+2023-07-12,Asia,Electronics,Laptop Ultra,34,1499.99,50999.66,Business,Direct Sales
+2023-07-18,North America,Clothing,Designer Jeans,145,89.99,13048.55,Consumer,Email
+2023-07-25,Europe,Electronics,Tablet Mini,198,349.99,69298.02,Education,Online Ads
+2023-07-31,Asia,Home Goods,Robot Vacuum,78,399.99,31199.22,Consumer,Social Media
+2023-08-04,North America,Electronics,Smartphone X1,145,699.99,101498.55,Consumer,Direct Sales
+2023-08-11,South America,Clothing,Summer Dress,198,59.99,11878.02,Consumer,Affiliate
+2023-08-17,Europe,Electronics,Gaming Console,67,499.99,33499.33,Consumer,Email
+2023-08-24,Asia,Home Goods,Air Purifier,89,299.99,26699.11,Business,Social Media
+2023-08-31,North America,Electronics,Smart Watch,201,249.99,50247.99,Consumer,Online Ads
+2023-09-05,Europe,Clothing,Casual Shirt,245,39.99,9797.55,Consumer,Email
+2023-09-12,Asia,Electronics,Laptop Pro,56,1299.99,72799.44,Business,Direct Sales
+2023-09-18,North America,Home Goods,Smart Speaker,312,89.99,28076.88,Consumer,Social Media
+2023-09-25,South America,Electronics,Wireless Earbuds,145,89.99,13048.55,Consumer,Affiliate
+2023-09-30,Europe,Clothing,Athletic Shoes,178,79.99,14238.22,Consumer,Online Ads
+2023-10-04,North America,Electronics,Smartphone X2,98,799.99,78399.02,Consumer,Email
+2023-10-11,Asia,Home Goods,Coffee Maker,112,159.99,17918.88,Business,Social Media
+2023-10-17,Europe,Electronics,Tablet Mini,134,349.99,46898.66,Education,Direct Sales
+2023-10-24,North America,Clothing,Winter Jacket,76,129.99,9879.24,Consumer,Affiliate
+2023-10-31,South America,Electronics,Smart Watch,198,249.99,49498.02,Consumer,Email
+2023-11-05,Asia,Home Goods,Blender Pro,56,129.99,7279.44,Business,Online Ads
+2023-11-12,North America,Electronics,Laptop Ultra,45,1499.99,67499.55,Business,Direct Sales
+2023-11-18,Europe,Clothing,Designer Jeans,167,89.99,15028.33,Consumer,Social Media
+2023-11-25,Asia,Electronics,Smartphone X1,98,699.99,68599.02,Consumer,Email
+2023-11-30,North America,Home Goods,Robot Vacuum,43,399.99,17199.57,Consumer,Affiliate
+2023-12-04,South America,Electronics,Gaming Console,87,499.99,43499.13,Consumer,Online Ads
+2023-12-11,Europe,Clothing,Summer Dress,54,59.99,3239.46,Consumer,Email
+2023-12-17,North America,Electronics,Wireless Earbuds,267,89.99,24027.33,Consumer,Social Media
+2023-12-24,Asia,Home Goods,Air Purifier,98,299.99,29399.02,Business,Direct Sales
+2023-12-31,Europe,Electronics,Smart Watch,156,249.99,38998.44,Consumer,Affiliate 

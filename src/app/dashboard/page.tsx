@@ -51,19 +51,279 @@ export default function Dashboard() {
     setError(errorMessage)
   }
 
+  // Function to generate demo data if suitable fields aren't found
+  const generateDemoData = (chartType: ChartType) => {
+    // Start with the original data
+    const enhancedData = [...currentData!.rows]
+
+    // Add a demo numeric field with non-zero values
+    const demoField = `demo_${chartType}_value`
+
+    enhancedData.forEach((row, index) => {
+      // Generate different patterns based on chart type
+      switch (chartType) {
+        case "bar":
+        case "line":
+        case "area":
+          row[demoField] = Math.sin(index * 0.3) * 50 + 50 // Sine wave pattern
+          break
+        case "pie":
+          // For pie chart, create a few distinct categories with values
+          row[demoField] = 10 + Math.floor(index % 5) * 20
+          break
+        case "scatter":
+          row[demoField] = Math.random() * 100
+          break
+      }
+    })
+
+    // Update the current data with the enhanced data
+    setCurrentData({
+      headers: [...currentData!.headers, demoField],
+      rows: enhancedData
+    })
+
+    return demoField
+  }
+
   const handleAddChart = (chartType: ChartType, config: any = {}) => {
     if (!currentData) return
+
+    // Helper function to detect ID-like fields we should avoid for visualization
+    const isIdLikeField = (fieldName: string, values: any[]): boolean => {
+      // Check if field name contains common ID patterns
+      if (/id$|^id|_id$|^customer|^user/i.test(fieldName)) {
+        return true
+      }
+
+      // If it's a string field with alphanumeric patterns like "C1001", "P123", etc.
+      if (values.length > 0 && typeof values[0] === "string") {
+        const idPattern = /^[A-Z][0-9]+$/i
+        const matchCount = values.filter(
+          (v) => typeof v === "string" && idPattern.test(v)
+        ).length
+
+        if (matchCount > values.length * 0.5) {
+          return true
+        }
+      }
+
+      return false
+    }
+
+    // Helper to detect how good a numeric field is for visualization
+    const getNumericFieldScore = (fieldName: string, values: any[]): number => {
+      // Extract numeric values
+      const numericValues = values
+        .map((v) => (typeof v === "string" ? parseFloat(v) : v))
+        .filter((v) => !isNaN(v))
+
+      if (numericValues.length === 0) return 0
+
+      // Calculate variance - higher variance is better for visualization
+      const mean =
+        numericValues.reduce((sum, v) => sum + v, 0) / numericValues.length
+      const variance =
+        numericValues.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) /
+        numericValues.length
+
+      // Get unique value ratio - more unique values are better
+      const uniqueCount = new Set(numericValues).size
+      const uniqueRatio = uniqueCount / numericValues.length
+
+      // Fields with higher variance and more unique values get higher scores
+      return variance * uniqueRatio * 100
+    }
+
+    // Find appropriate fields based on data types with improved detection
+    const numericFields = currentData.headers.filter((header) => {
+      // Skip ID-like fields
+      if (
+        isIdLikeField(
+          header,
+          currentData.rows.map((row) => row[header])
+        )
+      ) {
+        return false
+      }
+
+      // Check if most values for this header are numeric
+      const numericCount = currentData.rows.reduce((count, row) => {
+        const value = row[header]
+        return typeof value === "number" ||
+          (typeof value === "string" && !isNaN(parseFloat(value)))
+          ? count + 1
+          : count
+      }, 0)
+
+      // Also check if the field has non-zero values
+      const hasNonZeroValues = currentData.rows.some((row) => {
+        const val =
+          typeof row[header] === "string"
+            ? parseFloat(row[header])
+            : row[header]
+        return !isNaN(val) && Math.abs(val) > 0.001
+      })
+
+      return numericCount > currentData.rows.length * 0.5 && hasNonZeroValues
+    })
+
+    // Sort numeric fields by their visualization score
+    const scoredNumericFields = numericFields
+      .map((field) => ({
+        field,
+        score: getNumericFieldScore(
+          field,
+          currentData.rows.map((row) => row[field])
+        )
+      }))
+      .sort((a, b) => b.score - a.score)
+      .map((item) => item.field)
+
+    // Find date fields
+    const dateFields = currentData.headers.filter((header) => {
+      // Skip ID-like fields
+      if (
+        isIdLikeField(
+          header,
+          currentData.rows.map((row) => row[header])
+        )
+      ) {
+        return false
+      }
+
+      const dateCount = currentData.rows.reduce((count, row) => {
+        const value = row[header]
+        return typeof value === "string" && value.match(/^\d{4}-\d{2}-\d{2}/)
+          ? count + 1
+          : count
+      }, 0)
+
+      return dateCount > currentData.rows.length * 0.5
+    })
+
+    // Find categorical fields (non-numeric, non-date, non-ID)
+    const categoryFields = currentData.headers.filter((header) => {
+      if (
+        isIdLikeField(
+          header,
+          currentData.rows.map((row) => row[header])
+        )
+      ) {
+        return false
+      }
+
+      return !numericFields.includes(header) && !dateFields.includes(header)
+    })
+
+    // Get fields with good categorical distribution (not too many unique values)
+    const goodCategoryFields = categoryFields.filter((field) => {
+      const uniqueValues = new Set(currentData.rows.map((row) => row[field]))
+      // Good categorical fields have between 2 and 15 unique values
+      return uniqueValues.size >= 2 && uniqueValues.size <= 15
+    })
+
+    // Select appropriate fields based on chart type
+    let xAxisField: string = currentData.headers[0]
+    let yAxisField: string =
+      currentData.headers.length > 1
+        ? currentData.headers[1]
+        : currentData.headers[0]
+    let groupByField: string | null = null
+
+    switch (chartType) {
+      case "bar":
+      case "line":
+      case "area":
+        // For time series charts, prefer date fields for x-axis
+        if (dateFields.length > 0) {
+          xAxisField = dateFields[0]
+        }
+        // Otherwise use a good categorical field with reasonable cardinality
+        else if (goodCategoryFields.length > 0) {
+          xAxisField = goodCategoryFields[0]
+        }
+        // Last resort - any categorical field
+        else if (categoryFields.length > 0) {
+          xAxisField = categoryFields[0]
+        }
+
+        // For y-axis, choose the best numeric field based on score
+        if (scoredNumericFields.length > 0) {
+          yAxisField = scoredNumericFields[0]
+        } else if (numericFields.length > 0) {
+          yAxisField = numericFields[0]
+        } else {
+          // If no suitable numeric fields, generate demo data
+          yAxisField = generateDemoData(chartType)
+        }
+
+        // Choose a good categorical field for grouping (different from x-axis)
+        if (goodCategoryFields.length > 1) {
+          groupByField =
+            goodCategoryFields.find((f) => f !== xAxisField) || null
+        } else if (
+          goodCategoryFields.length === 1 &&
+          goodCategoryFields[0] !== xAxisField
+        ) {
+          groupByField = goodCategoryFields[0]
+        }
+        break
+
+      case "pie":
+        // For pie charts, use a categorical field with reasonable cardinality
+        if (goodCategoryFields.length > 0) {
+          xAxisField = goodCategoryFields[0]
+        } else if (categoryFields.length > 0) {
+          xAxisField = categoryFields[0]
+        }
+
+        // For the values, use a good numeric field
+        if (scoredNumericFields.length > 0) {
+          yAxisField = scoredNumericFields[0]
+        } else if (numericFields.length > 0) {
+          yAxisField = numericFields[0]
+        } else {
+          // If no suitable numeric fields, generate demo data
+          yAxisField = generateDemoData(chartType)
+        }
+        break
+
+      case "scatter":
+        // For scatter, we need two numeric fields with different distributions
+        if (scoredNumericFields.length >= 2) {
+          xAxisField = scoredNumericFields[0]
+          yAxisField = scoredNumericFields[1]
+        } else if (numericFields.length >= 2) {
+          xAxisField = numericFields[0]
+          yAxisField = numericFields[1]
+        } else {
+          // Generate demo data if we don't have enough numeric fields
+          xAxisField =
+            numericFields.length > 0
+              ? numericFields[0]
+              : generateDemoData(chartType)
+          yAxisField = generateDemoData(chartType)
+        }
+
+        // Use a good categorical field for grouping if available
+        groupByField =
+          goodCategoryFields.length > 0 ? goodCategoryFields[0] : null
+        break
+    }
 
     const newChart = {
       id: `chart-${Date.now()}`,
       type: chartType,
       config: {
         type: chartType,
-        xAxis: config.xAxis || currentData.headers[0],
-        yAxis: config.yAxis || currentData.headers[1],
+        xAxis: config.xAxis || xAxisField,
+        yAxis: config.yAxis || yAxisField,
+        groupBy: config.groupBy || groupByField,
         title:
           config.title ||
           `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart`,
+        margin: { top: 20, right: 30, left: 40, bottom: 40 },
         ...config
       }
     }
@@ -306,7 +566,11 @@ export default function Dashboard() {
               ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {charts.map((chart) => (
-                    <div key={chart.id} className="relative">
+                    <div
+                      key={chart.id}
+                      className="relative bg-white rounded-lg shadow-sm"
+                      style={{ minHeight: "350px" }}
+                    >
                       <button
                         type="button"
                         onClick={() => handleDeleteChart(chart.id)}

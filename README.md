@@ -8,6 +8,7 @@ Prism is a comprehensive business intelligence dashboard built with Next.js, Typ
 - **AI-Powered Analysis**: Automatically identify trends, anomalies, and correlations in your data
 - **Interactive Visualizations**: Create beautiful charts with Recharts
 - **Efficient Data Handling**: Optimized for large datasets with proper caching
+- **AI Visualization Suggestions**: Get intelligent visualization recommendations using OpenAI
 
 ## Technologies Used
 
@@ -196,6 +197,36 @@ If you encounter issues:
 4. **Performance Issues**
    - For very large datasets, consider applying filters before visualization
    - Use the browser's refresh button if the dashboard becomes unresponsive
+
+## AI Integration
+
+Prism includes OpenAI integration to provide intelligent analysis of your data and suggest optimal visualizations:
+
+### AI-Powered Visualization Suggestions
+
+The dashboard uses OpenAI to analyze your dataset and suggest the most effective visualizations based on:
+
+1. **Data characteristics**: Identifies numeric, categorical, and temporal data
+2. **Statistical properties**: Analyzes distributions, outliers, and relationships
+3. **Best practices**: Applies data visualization best practices to suggest chart types
+
+### How It Works
+
+1. After uploading your data, navigate to the "AI Analysis" tab
+2. Click on "AI Visualization Suggestions"
+3. Click "Generate Visualization Suggestions"
+4. Review the AI-recommended visualizations
+5. Click "Apply This Visualization" on any suggestion you want to use
+
+This feature helps you quickly identify meaningful patterns and insights in your data without manually configuring each chart.
+
+### Environment Setup
+
+To use the AI features, you need to set up an OpenAI API key in your `.env.local` file:
+
+```
+OPENAI_API_KEY=your-openai-api-key
+```
 
 ## License
 
